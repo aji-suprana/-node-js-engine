@@ -1,28 +1,42 @@
 import express = require('express');
 import * as core from "express-serve-static-core";
 import {HTTPMethodType}  from "./HTTPMethodType"
+const EngineInstance = require("../index").EngineInstance;
+import * as index from "../index"
 
-type FunctionType1 = (x: string, y: number) => number;
 const router = require('express').Router();
-
 
 class RequestGroup{
     expressApp:express.Application = express();
-
-    //http://<url>/[requestGroupPath]/
+    requestGroupName:string = 'null';
     requestGroupPath:string = 'null';
-    Initialize(expressApp: express.Application ,_requestGroupPath:string){
+    isInitialized:boolean = false;
+
+    constructor(_requestGroupName:string){
+        this.requestGroupName =_requestGroupName;
+        this.requestGroupPath = "/"+ _requestGroupName;
+        //QG_Engine.RegisterRequestGroup(this);
+    }
+
+    Initialize(expressApp: express.Application)
+    {
+        if(this.isInitialized === true){return}
+        this.isInitialized = true;
+        console.log("RequestGroup["+this.requestGroupName+"] is Initializing.....")
         this.expressApp = expressApp;
-        this.requestGroupPath = "/"+ _requestGroupPath;
-        console.log("Request Group "+this.requestGroupPath + " Initialized");
         this.RegisterHTTPMethods();
         this.RoutesHandler();
+    }
 
+
+    getInstance()
+    {
+        throw "RequestGroup Classes have to implement getInstance method and instance variable for singleton";
     }
 
     RegisterHTTPMethods()
     {
-        throw "Request Group Child Classes have to implement RegisterHTTPMethods() method";
+        throw "RequestGroup Classes have to implement RegisterHTTPMethods() method";
     }
 
     RoutesHandler()
@@ -30,33 +44,33 @@ class RequestGroup{
         this.expressApp.use(this.requestGroupPath,router);
     }
 
-    RegisterHTTPMethod(MethodType:HTTPMethodType,path:string,requestCB:core.RequestHandler)
+    RegisterHTTPMethod(MethodType:HTTPMethodType,routerName:string,requestCB:core.RequestHandler)
     {
-        var curPath = '/'+path;
+        var path = '/'+routerName;
         var methodTypeName = HTTPMethodType[MethodType];
         switch(MethodType)
         {
-            case HTTPMethodType.copy: router.copy(curPath,requestCB); this.DebugRegisteredHTTPMethod(methodTypeName,path);break;
-            case HTTPMethodType.delete: router.delete(curPath,requestCB);this.DebugRegisteredHTTPMethod(methodTypeName,path); break;
-            case HTTPMethodType.get: router.get(curPath,requestCB); this.DebugRegisteredHTTPMethod(methodTypeName,path);break;
-            case HTTPMethodType.head: router.head(curPath,requestCB);this.DebugRegisteredHTTPMethod(methodTypeName,path); break;
-            case HTTPMethodType.link: router.link(curPath,requestCB);this.DebugRegisteredHTTPMethod(methodTypeName,path); break;
-            case HTTPMethodType.lock: router.lock(curPath,requestCB);this.DebugRegisteredHTTPMethod(methodTypeName,path); break;
-            case HTTPMethodType.options: router.options(curPath,requestCB);this.DebugRegisteredHTTPMethod(methodTypeName,path); break;
-            case HTTPMethodType.patch: router.patch(curPath,requestCB);this.DebugRegisteredHTTPMethod(methodTypeName,path); break;
-            case HTTPMethodType.post: router.post(curPath,requestCB); this.DebugRegisteredHTTPMethod(methodTypeName,path);break;
-            case HTTPMethodType.propfind: router.propfind(curPath,requestCB);this.DebugRegisteredHTTPMethod(methodTypeName,path); break;
-            case HTTPMethodType.purge: router.purge(curPath,requestCB); this.DebugRegisteredHTTPMethod(methodTypeName,path);break;
-            case HTTPMethodType.put: router.put(curPath,requestCB); this.DebugRegisteredHTTPMethod(methodTypeName,path);break;
-            case HTTPMethodType.unlink: router.unlink(curPath,requestCB);this.DebugRegisteredHTTPMethod(methodTypeName,path); break;
-            case HTTPMethodType.unlock: router.unlock(curPath,requestCB); this.DebugRegisteredHTTPMethod(methodTypeName,path);break;
-            case HTTPMethodType.view: router.view(curPath,requestCB); this.DebugRegisteredHTTPMethod(methodTypeName,path);break;
+            case HTTPMethodType.copy: router.copy(path,requestCB); this.DebugRegisteredHTTPMethod(methodTypeName,path);break;
+            case HTTPMethodType.delete: router.delete(path,requestCB);this.DebugRegisteredHTTPMethod(methodTypeName,path); break;
+            case HTTPMethodType.get: router.get(path,requestCB); this.DebugRegisteredHTTPMethod(methodTypeName,path);break;
+            case HTTPMethodType.head: router.head(path,requestCB);this.DebugRegisteredHTTPMethod(methodTypeName,path); break;
+            case HTTPMethodType.link: router.link(path,requestCB);this.DebugRegisteredHTTPMethod(methodTypeName,path); break;
+            case HTTPMethodType.lock: router.lock(path,requestCB);this.DebugRegisteredHTTPMethod(methodTypeName,path); break;
+            case HTTPMethodType.options: router.options(path,requestCB);this.DebugRegisteredHTTPMethod(methodTypeName,path); break;
+            case HTTPMethodType.patch: router.patch(path,requestCB);this.DebugRegisteredHTTPMethod(methodTypeName,path); break;
+            case HTTPMethodType.post: router.post(path,requestCB); this.DebugRegisteredHTTPMethod(methodTypeName,path);break;
+            case HTTPMethodType.propfind: router.propfind(path,requestCB);this.DebugRegisteredHTTPMethod(methodTypeName,path); break;
+            case HTTPMethodType.purge: router.purge(path,requestCB); this.DebugRegisteredHTTPMethod(methodTypeName,path);break;
+            case HTTPMethodType.put: router.put(path,requestCB); this.DebugRegisteredHTTPMethod(methodTypeName,path);break;
+            case HTTPMethodType.unlink: router.unlink(path,requestCB);this.DebugRegisteredHTTPMethod(methodTypeName,path); break;
+            case HTTPMethodType.unlock: router.unlock(path,requestCB); this.DebugRegisteredHTTPMethod(methodTypeName,path);break;
+            case HTTPMethodType.view: router.view(path,requestCB); this.DebugRegisteredHTTPMethod(methodTypeName,path);break;
             default: console.log("HttpMethod does not exist");
         }
     }
 
     DebugRegisteredHTTPMethod(methodName:string,path:string){
-        console.log("registered httpmethod:"+methodName+",with path: /"+path);
+        console.log("registered httpmethod:"+methodName+" ,at path:"+this.requestGroupPath+path);
     }
 
 }
