@@ -1,5 +1,6 @@
 import {Response} from "express-serve-static-core";
 import {Request} from "express-serve-static-core";
+import { debug } from "util";
 
 export class ResponseHelper{
     RequestName:string = "none";
@@ -23,8 +24,10 @@ export class ResponseHelper{
         
         return jsonObj;  
     }
-    JsonResponse_Succeded(result:any)
+
+    DocResponse_Succeded(result:any)
     {
+        console.log(result);
         var jsonObj = {
             "response":"." + this.RequestName+"Response",
             ...result._doc
@@ -35,6 +38,18 @@ export class ResponseHelper{
         return jsonObj;
     }
     
+    StringResponse_Succeded(result:string)
+    {
+        console.log(result);
+        var jsonObj = {
+            "response":"." + this.RequestName+"Response",
+            "message" : result
+        };
+        console.log(jsonObj);
+        
+        return jsonObj;
+    }
+
     JsonResponse_Failed(err:any)
     {
         var jsonObj = {
@@ -46,9 +61,18 @@ export class ResponseHelper{
         return jsonObj;
     }
 
-    HTTP_OK(result:any)
+    HTTP_OK_StringResponse(result:string)
     {
-        return this.responseBody.status(200).json(this.JsonResponse_Succeded(result));
+        return this.responseBody.status(200).json(this.StringResponse_Succeded(result));
+    }
+    HTTP_OK_DocResponse(result:any)
+    {
+        return this.responseBody.status(200).json(this.DocResponse_Succeded(result));
+    }
+
+    HTTP_Unauthorized(err:any)
+    {
+        return this.responseBody.status(401).json(this.JsonResponse_Failed(err));
     }
 
     HTTP_UnprocessableEntity(err:any)
