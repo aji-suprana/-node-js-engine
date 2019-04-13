@@ -1,3 +1,4 @@
+import {Document} from 'mongoose'
 import {Response} from "express-serve-static-core";
 import {Request} from "express-serve-static-core";
 import { debug } from "util";
@@ -20,17 +21,28 @@ export class ResponseHelper{
             ...this.requestBody.body
         };
         delete jsonObj["__v"];
-
+        console.log(jsonObj);
         
         return jsonObj;  
     }
 
-    DocResponse_Succeded(result:any)
+    JSONResponse_Succeded(result:Object)
     {
-        console.log(result);
         var jsonObj = {
             "response":"." + this.RequestName+"Response",
-            ...result._doc
+            ...result
+        };
+
+        console.log(jsonObj);
+        
+        return jsonObj;
+    }
+
+    DocResponse_Succeded(result:Document)
+    {
+        var jsonObj = {
+            "response":"." + this.RequestName+"Response",
+            ...result.toObject()
         };
         delete jsonObj["__v"];
         console.log(jsonObj);
@@ -40,13 +52,12 @@ export class ResponseHelper{
     
     StringResponse_Succeded(result:string)
     {
-        console.log(result);
         var jsonObj = {
             "response":"." + this.RequestName+"Response",
             "message" : result
-        };
+        };        
         console.log(jsonObj);
-        
+
         return jsonObj;
     }
 
@@ -65,9 +76,13 @@ export class ResponseHelper{
     {
         return this.responseBody.status(200).json(this.StringResponse_Succeded(result));
     }
-    HTTP_OK_DocResponse(result:any)
+    HTTP_OK_DocResponse(result:Document)
     {
         return this.responseBody.status(200).json(this.DocResponse_Succeded(result));
+    }
+    HTTP_OK_JSONResponse(result:Object)
+    {
+        return this.responseBody.status(200).json(this.JSONResponse_Succeded(result));
     }
 
     HTTP_Unauthorized(err:any)
